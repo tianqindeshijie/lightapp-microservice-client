@@ -1,0 +1,31 @@
+
+server:
+  port: 8082
+spring:
+  rabbitmq:
+    host: 172.19.3.144
+    port: 5672
+    username: lightapp
+    password: lightapp123
+    virtual-host: lightapp
+  zipkin:
+    enabled: true
+    baseUrl: http://172.19.3.138:9411/
+  sleuth:
+    stream:
+      enabled: true
+    sampler:
+     # 采样率，默认0.1即10%,如需测试时每次都看到trace则修改为1.0，但对性能有影响，注意上线时修改为合理值
+      percentage: 1.0
+
+sample:
+  zipkin:
+    # When enabled=false, traces log to the console. Comment to send to zipkin
+    enabled: true
+debug: true
+redis:
+logstash:
+  pipeline:
+    ip: 192.168.153.128
+
+
