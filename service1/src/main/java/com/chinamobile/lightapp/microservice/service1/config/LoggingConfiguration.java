@@ -1,4 +1,4 @@
-package com.chinamobile.iot.microservice.common.config;
+package com.chinamobile.lightapp.microservice.service1.config;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.Appender;
@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import java.util.Iterator;
 
 @Configuration
 @EnableConfigurationProperties(LightAppProperties.class)
@@ -30,15 +31,54 @@ public class LoggingConfiguration {
 
 
     public LoggingConfiguration() {
+
         System.out.println("config 启动了！");
     }
     @PostConstruct
     private void init() {
-        if (lightAppProperties.getLogging().getRedis().isEnabled()) {
-            addLogstashAppender();
+        //resetRedisAppender();
+        addLogstashAppender();
+    }
+    public void resetRedisAppender() {
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("ROOT");
+        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        LoggingEventAsyncDisruptorAppender lAppender = (LoggingEventAsyncDisruptorAppender) logger.getAppender("logstash");
+        if(lAppender == null) {
+            return ;
+        }
+
+        if (!lightAppProperties.getLogging().getRedis().isEnabled()) {
+            lAppender.stop();
+            logger.detachAppender("logstash");
+            return ;
+        }
+        Iterator iterator = lAppender.iteratorForAppenders();
+        while (iterator.hasNext()) {
+            Appender appender = (Appender) iterator.next();
+            if(appender instanceof RedisBatchAppender) {
+                RedisBatchAppender redisBatchAppender =(RedisBatchAppender)appender;
+                redisBatchAppender.stop();
+                RedisConnectionConfig redisConnectionConfig = redisBatchAppender.getConnectionConfig();
+                RedisConnectionConfig.RedisScheme scheme = lightAppProperties.getLogging().getRedis().getScheme();
+                //设置redis模式
+                redisConnectionConfig.setScheme(scheme);
+                //设置redis消息key
+                redisConnectionConfig.setKey(lightAppProperties.getLogging().getRedis().getKey());
+                //判断redis是单机还是集群
+                if(scheme == RedisConnectionConfig.RedisScheme.SENTINEL) {
+                    redisConnectionConfig.setSentinelMasterName(lightAppProperties.getLogging().getRedis().getSentinelMasterName());
+                    redisConnectionConfig.setSentinels(lightAppProperties.getLogging().getRedis().getSentinels());
+                } else {
+                    //设置地址和端口
+                    redisConnectionConfig.setHost(lightAppProperties.getLogging().getRedis().getHost());
+                    redisConnectionConfig.setPort(lightAppProperties.getLogging().getRedis().getPort());
+                }
+                redisBatchAppender.start();
+                context.reset();
+            }
+
         }
     }
-
     public void addLogstashAppender() {
         log.info("Initializing log-redis-logstash logging");
         //1. 初始化最顶层的appender
@@ -52,6 +92,19 @@ public class LoggingConfiguration {
         //5. 设置redis 连接配置
         RedisConnectionConfig redisConnectionConfig = new RedisConnectionConfig();
         RedisConnectionConfig.RedisScheme scheme = lightAppProperties.getLogging().getRedis().getScheme();
+        //设置redis模式
+        redisConnectionConfig.setScheme(scheme);
+        //设置redis消息key
+        redisConnectionConfig.setKey(lightAppProperties.getLogging().getRedis().getKey());
+        //判断redis是单机还是集群
+        if(scheme == RedisConnectionConfig.RedisScheme.SENTINEL) {
+            redisConnectionConfig.setSentinelMasterName(lightAppProperties.getLogging().getRedis().getSentinelMasterName());
+            redisConnectionConfig.setSentinels(lightAppProperties.getLogging().getRedis().getSentinels());
+        } else {
+            //设置地址和端口
+            redisConnectionConfig.setHost(lightAppProperties.getLogging().getRedis().getHost());
+            redisConnectionConfig.setPort(lightAppProperties.getLogging().getRedis().getPort());
+        }
         //设置redis模式
         redisConnectionConfig.setScheme(scheme);
         //设置redis消息key
