@@ -23,9 +23,10 @@ sample:
     # When enabled=false, traces log to the console. Comment to send to zipkin
     enabled: true
 debug: true
-redis:
-logstash:
-  pipeline:
-    ip: 192.168.153.128
+baas:
+  logging:
+    redis:
+      enabled: true
+      host: 192.168.153.128
 
 

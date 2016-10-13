@@ -12,12 +12,13 @@ import net.logstash.logback.stacktrace.ShortenedThrowableConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.util.Iterator;
-
+@RefreshScope
 @Configuration
 @EnableConfigurationProperties(LightAppProperties.class)
 public class LoggingConfiguration {
@@ -37,7 +38,7 @@ public class LoggingConfiguration {
     @PostConstruct
     private void init() {
         //resetRedisAppender();
-        addLogstashAppender();
+        addRedisAppender();
     }
     public void resetRedisAppender() {
         ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("ROOT");
@@ -79,7 +80,7 @@ public class LoggingConfiguration {
 
         }
     }
-    public void addLogstashAppender() {
+    public void addRedisAppender() {
         log.info("Initializing log-redis-logstash logging");
         //1. 初始化最顶层的appender
         LoggingEventAsyncDisruptorAppender logAppender = new LoggingEventAsyncDisruptorAppender();
@@ -129,6 +130,8 @@ public class LoggingConfiguration {
         LoggingEventJsonProviders providers = new LoggingEventJsonProviders();
         LoggingEventPatternJsonProvider patternJsonProvider = new LoggingEventPatternJsonProvider();
         patternJsonProvider.setPattern(lightAppProperties.getLogging().getPattern());
+        patternJsonProvider.setContext(context);
+        patternJsonProvider.start();
         providers.addPattern(patternJsonProvider);
         StackTraceJsonProvider stackTraceJsonProvider = new StackTraceJsonProvider();
         ShortenedThrowableConverter shortenedThrowableConverter = new ShortenedThrowableConverter();
@@ -137,10 +140,14 @@ public class LoggingConfiguration {
         shortenedThrowableConverter.setShortenedClassNameLength(20);
         shortenedThrowableConverter.setRootCauseFirst(true);
         stackTraceJsonProvider.setThrowableConverter(shortenedThrowableConverter);
+        stackTraceJsonProvider.setContext(context);
+        stackTraceJsonProvider.start();
         providers.addStackTrace(stackTraceJsonProvider);
-        providers.addArguments(new ArgumentsJsonProvider());
-        providers.addMdc(new MdcJsonProvider());
+        providers.setContext(context);
+        providers.start();
         encoder.setProviders(providers);
+        encoder.setContext(context);
+        encoder.start();
         redisBatchAppender.setEncoder((Encoder)encoder);
         redisBatchAppender.setContext(context);
         redisBatchAppender.setName("redis");
@@ -150,5 +157,6 @@ public class LoggingConfiguration {
         logAppender.addAppender((Appender)redisBatchAppender);
         logAppender.start();
         context.getLogger("ROOT").addAppender(logAppender);
+        System.out.println("success");
     }
 }

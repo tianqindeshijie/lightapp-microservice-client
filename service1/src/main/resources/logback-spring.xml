@@ -35,48 +35,9 @@
 			<charset>utf8</charset>
 		</encoder>
 	</appender>
-	<!-- 将日志发送的redis中 appender 具体的相关详细介绍参见 https://github.com/idealo/logback-redis-->
-	<appender name="logstash" class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
-		<appender class="de.idealo.logback.appender.RedisBatchAppender">
-			<filter>
-				<!--日志等级 -->
-				<level>INFO</level>
-			</filter>
-			<!-- redis 连接配置 -->
-			<connectionConfig>
-				<scheme>NODE</scheme>
-				<host>${logPipelineIP}</host>
-				<port>${logPipelinePort}</port>
-				<key>${logPipelineKey}</key>
-			</connectionConfig>
-			<encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-				<providers>
-					<arguments/>
-					<mdc/>
-					<pattern>
-						<pattern>
-							{
-							"host": "${HOSTNAME}",
-							"severity": "%level",
-							"service": "${springAppName:-}",
-							"trace": "%X{X-B3-TraceId:-}",
-							"span": "%X{X-B3-SpanId:-}",
-							"exportable": "%X{X-Span-Export:-}",
-							"pid": "${PID:-}",
-							"thread": "%thread",
-							"class": "%logger{40}",
-							"rest": "%message"
-							}
-						</pattern>
-					</pattern>
-					<stackTrace/>
-				</providers>
-			</encoder>
-		</appender>
-	</appender>
+
 	<root level="INFO">
 <appender-ref ref="console"/>
-<appender-ref ref="logstash"/>
 <appender-ref ref="file"/>
 </root>
 		</configuration>

@@ -20,4 +20,3 @@ eureka:
       defaultZone: http://172.19.3.138:8761/eureka/
   instance:
     prefer-ip-address: true
-li
