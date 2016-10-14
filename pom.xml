@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>service1</module>
-        <module>lightapp-common</module>
+        <module>micro-service-common</module>
     </modules>
     <groupId>com.chinamobile.iot.lightapp.microservice.client</groupId>
     <artifactId>com.chinamobile.iot.lightapp.microservice.client</artifactId>
