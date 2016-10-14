@@ -1,4 +1,4 @@
-package com.chinamobile.iot.microservice.common.config;
+package com.chinamobile.iot.common.loggingconfig;
 
 import de.idealo.logback.appender.RedisConnectionConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;

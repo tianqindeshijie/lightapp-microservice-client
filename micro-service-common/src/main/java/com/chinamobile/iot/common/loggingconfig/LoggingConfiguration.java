@@ -1,4 +1,4 @@
-package com.chinamobile.iot.microservice.common.config;
+package com.chinamobile.iot.common.loggingconfig;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.Appender;
@@ -6,17 +6,21 @@ import ch.qos.logback.core.encoder.Encoder;
 import de.idealo.logback.appender.RedisBatchAppender;
 import de.idealo.logback.appender.RedisConnectionConfig;
 import net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender;
-import net.logstash.logback.composite.loggingevent.*;
+import net.logstash.logback.composite.loggingevent.LoggingEventJsonProviders;
+import net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider;
+import net.logstash.logback.composite.loggingevent.StackTraceJsonProvider;
 import net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder;
 import net.logstash.logback.stacktrace.ShortenedThrowableConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+@RefreshScope
 @Configuration
 @EnableConfigurationProperties(LightAppProperties.class)
 public class LoggingConfiguration {
@@ -28,18 +32,11 @@ public class LoggingConfiguration {
     @Inject
     private LightAppProperties lightAppProperties;
 
-
-    public LoggingConfiguration() {
-        System.out.println("config 启动了！");
-    }
     @PostConstruct
     private void init() {
-        if (lightAppProperties.getLogging().getRedis().isEnabled()) {
-            addLogstashAppender();
-        }
+        addRedisAppender();
     }
-
-    public void addLogstashAppender() {
+    public void addRedisAppender() {
         log.info("Initializing log-redis-logstash logging");
         //1. 初始化最顶层的appender
         LoggingEventAsyncDisruptorAppender logAppender = new LoggingEventAsyncDisruptorAppender();
@@ -65,6 +62,19 @@ public class LoggingConfiguration {
             redisConnectionConfig.setHost(lightAppProperties.getLogging().getRedis().getHost());
             redisConnectionConfig.setPort(lightAppProperties.getLogging().getRedis().getPort());
         }
+        //设置redis模式
+        redisConnectionConfig.setScheme(scheme);
+        //设置redis消息key
+        redisConnectionConfig.setKey(lightAppProperties.getLogging().getRedis().getKey());
+        //判断redis是单机还是集群
+        if(scheme == RedisConnectionConfig.RedisScheme.SENTINEL) {
+            redisConnectionConfig.setSentinelMasterName(lightAppProperties.getLogging().getRedis().getSentinelMasterName());
+            redisConnectionConfig.setSentinels(lightAppProperties.getLogging().getRedis().getSentinels());
+        } else {
+            //设置地址和端口
+            redisConnectionConfig.setHost(lightAppProperties.getLogging().getRedis().getHost());
+            redisConnectionConfig.setPort(lightAppProperties.getLogging().getRedis().getPort());
+        }
         //6. 设置redisConnectionConfig
         redisBatchAppender.setConnectionConfig(redisConnectionConfig);
         //7. 设置maxBatchMessages
@@ -76,6 +86,8 @@ public class LoggingConfiguration {
         LoggingEventJsonProviders providers = new LoggingEventJsonProviders();
         LoggingEventPatternJsonProvider patternJsonProvider = new LoggingEventPatternJsonProvider();
         patternJsonProvider.setPattern(lightAppProperties.getLogging().getPattern());
+        patternJsonProvider.setContext(context);
+        patternJsonProvider.start();
         providers.addPattern(patternJsonProvider);
         StackTraceJsonProvider stackTraceJsonProvider = new StackTraceJsonProvider();
         ShortenedThrowableConverter shortenedThrowableConverter = new ShortenedThrowableConverter();
@@ -84,10 +96,14 @@ public class LoggingConfiguration {
         shortenedThrowableConverter.setShortenedClassNameLength(20);
         shortenedThrowableConverter.setRootCauseFirst(true);
         stackTraceJsonProvider.setThrowableConverter(shortenedThrowableConverter);
+        stackTraceJsonProvider.setContext(context);
+        stackTraceJsonProvider.start();
         providers.addStackTrace(stackTraceJsonProvider);
-        providers.addArguments(new ArgumentsJsonProvider());
-        providers.addMdc(new MdcJsonProvider());
+        providers.setContext(context);
+        providers.start();
         encoder.setProviders(providers);
+        encoder.setContext(context);
+        encoder.start();
         redisBatchAppender.setEncoder((Encoder)encoder);
         redisBatchAppender.setContext(context);
         redisBatchAppender.setName("redis");
@@ -97,5 +113,6 @@ public class LoggingConfiguration {
         logAppender.addAppender((Appender)redisBatchAppender);
         logAppender.start();
         context.getLogger("ROOT").addAppender(logAppender);
+        System.out.println("success");
     }
 }

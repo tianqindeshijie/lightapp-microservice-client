@@ -1,0 +1,95 @@
+{
+  "groups": [
+    {
+      "name": "baas",
+      "type": "com.chinamobile.iot.common.loggingconfig.LightAppProperties",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties"
+    },
+    {
+      "name": "baas.logging",
+      "type": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties",
+      "sourceMethod": "getLogging()"
+    },
+    {
+      "name": "baas.logging.redis",
+      "type": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging$Redis",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging",
+      "sourceMethod": "getRedis()"
+    }
+  ],
+  "properties": [
+    {
+      "name": "baas.logging.pattern",
+      "type": "java.lang.String",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging",
+      "defaultValue": "{\n\"host\": \"${HOSTNAME}\",\n\"severity\": \"%level\",\n\"service\": \"${springAppName:-}\",\n\"trace\": \"%X{X-B3-TraceId:-}\",\n\"span\": \"%X{X-B3-SpanId:-}\",\n\"exportable\": \"%X{X-Span-Export:-}\",\n\"pid\": \"${PID:-}\",\n\"thread\": \"%thread\",\n\"class\": \"%logger{40}\",\n\"rest\": \"%message\"\n}"
+    },
+    {
+      "name": "baas.logging.redis.enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging$Redis",
+      "defaultValue": true
+    },
+    {
+      "name": "baas.logging.redis.host",
+      "type": "java.lang.String",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging$Redis",
+      "defaultValue": "localhost"
+    },
+    {
+      "name": "baas.logging.redis.key",
+      "type": "java.lang.String",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging$Redis",
+      "defaultValue": "logstash"
+    },
+    {
+      "name": "baas.logging.redis.level",
+      "type": "java.lang.String",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging$Redis",
+      "defaultValue": "INFO"
+    },
+    {
+      "name": "baas.logging.redis.max-batch-messages",
+      "type": "java.lang.Integer",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging$Redis",
+      "defaultValue": 10000
+    },
+    {
+      "name": "baas.logging.redis.max-batch-seconds",
+      "type": "java.lang.Integer",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging$Redis",
+      "defaultValue": 10
+    },
+    {
+      "name": "baas.logging.redis.port",
+      "type": "java.lang.Integer",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging$Redis",
+      "defaultValue": 6379
+    },
+    {
+      "name": "baas.logging.redis.ring-buffer-size",
+      "type": "java.lang.Integer",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging$Redis",
+      "defaultValue": 131072
+    },
+    {
+      "name": "baas.logging.redis.scheme",
+      "type": "de.idealo.logback.appender.RedisConnectionConfig$RedisScheme",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging$Redis"
+    },
+    {
+      "name": "baas.logging.redis.sentinel-master-name",
+      "type": "java.lang.String",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging$Redis",
+      "defaultValue": ""
+    },
+    {
+      "name": "baas.logging.redis.sentinels",
+      "type": "java.lang.String",
+      "sourceType": "com.chinamobile.iot.common.loggingconfig.LightAppProperties$Logging$Redis",
+      "defaultValue": ""
+    }
+  ],
+  "hints": []
+}

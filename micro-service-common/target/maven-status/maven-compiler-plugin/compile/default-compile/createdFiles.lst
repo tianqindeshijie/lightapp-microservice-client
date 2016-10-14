@@ -1,0 +1,5 @@
+com\chinamobile\iot\common\loggingconfig\LightAppProperties$Logging$Redis.class
+com\chinamobile\iot\common\loggingconfig\LightAppProperties.class
+META-INF\spring-configuration-metadata.json
+com\chinamobile\iot\common\loggingconfig\LoggingConfiguration.class
+com\chinamobile\iot\common\loggingconfig\LightAppProperties$Logging.class
